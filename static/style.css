@@ -1,0 +1,303 @@
+/* =====================================
+   GLOBAL STYLES
+===================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+
+    min-height:100vh;
+
+    background:
+    linear-gradient(
+        135deg,
+        #0f172a,
+        #1e293b,
+        #334155
+    );
+
+    font-family:
+    "Segoe UI",
+    sans-serif;
+
+    color:white;
+}
+
+/* =====================================
+   CONTAINER
+===================================== */
+
+.container{
+
+    max-width:1000px;
+}
+
+/* =====================================
+   HERO SECTION
+===================================== */
+
+.hero-section{
+
+    margin-bottom:40px;
+}
+
+.hero-section h1{
+
+    font-size:3rem;
+
+    font-weight:800;
+
+    margin-bottom:10px;
+
+    color:white;
+}
+
+.hero-section p{
+
+    font-size:1.1rem;
+
+    color:#cbd5e1;
+}
+
+/* =====================================
+   GLASS CARD
+===================================== */
+
+.custom-card{
+
+    background:
+    rgba(255,255,255,0.12);
+
+    backdrop-filter:
+    blur(15px);
+
+    border:
+    1px solid rgba(
+        255,
+        255,
+        255,
+        0.15
+    );
+
+    border-radius:25px;
+
+    box-shadow:
+    0 8px 32px rgba(
+        0,
+        0,
+        0,
+        0.25
+    );
+
+    color:white;
+}
+
+/* =====================================
+   LABELS
+===================================== */
+
+.form-label{
+
+    color:white;
+
+    font-weight:600;
+}
+
+/* =====================================
+   INPUTS
+===================================== */
+
+.form-control,
+.form-select{
+
+    height:55px;
+
+    border:none;
+
+    border-radius:12px;
+
+    padding-left:15px;
+
+    background:
+    rgba(
+        255,
+        255,
+        255,
+        0.9
+    );
+
+    transition:
+    all .3s ease;
+}
+
+.form-control:focus,
+.form-select:focus{
+
+    box-shadow:
+    0 0 10px
+    rgba(
+        99,
+        102,
+        241,
+        0.6
+    );
+
+    transform:
+    translateY(-2px);
+}
+
+/* =====================================
+   BUTTON
+===================================== */
+
+.btn-custom{
+
+    height:60px;
+
+    border:none;
+
+    border-radius:14px;
+
+    font-size:18px;
+
+    font-weight:700;
+
+    color:white;
+
+    background:
+    linear-gradient(
+        135deg,
+        #6366f1,
+        #8b5cf6
+    );
+
+    transition:
+    all .3s ease;
+}
+
+.btn-custom:hover{
+
+    transform:
+    translateY(-3px);
+
+    box-shadow:
+    0 10px 25px
+    rgba(
+        99,
+        102,
+        241,
+        0.5
+    );
+
+    color:white;
+}
+
+/* =====================================
+   PREDICTION CARD
+===================================== */
+
+.prediction-card{
+
+    margin-top:30px;
+
+    text-align:center;
+
+    padding:35px;
+
+    border-radius:20px;
+
+    background:
+    linear-gradient(
+        135deg,
+        #4f46e5,
+        #7c3aed
+    );
+
+    animation:
+    fadeIn .6s ease;
+}
+
+.prediction-card h5{
+
+    color:#e2e8f0;
+
+    margin-bottom:10px;
+
+    font-weight:600;
+}
+
+.prediction-card h1{
+
+    font-size:3rem;
+
+    font-weight:800;
+
+    color:white;
+
+    margin-bottom:10px;
+}
+
+.prediction-card p{
+
+    color:#e2e8f0;
+
+    margin-bottom:0;
+}
+
+/* =====================================
+   ERROR CARD
+===================================== */
+
+.alert{
+
+    border-radius:15px;
+}
+
+/* =====================================
+   ANIMATION
+===================================== */
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+
+        transform:
+        translateY(20px);
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:
+        translateY(0);
+    }
+}
+
+/* =====================================
+   MOBILE
+===================================== */
+
+@media(max-width:768px){
+
+    .hero-section h1{
+
+        font-size:2rem;
+    }
+
+    .prediction-card h1{
+
+        font-size:2rem;
+    }
+    
+    .btn-custom{
+
+        height:55px;
+    }
+}
