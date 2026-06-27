@@ -1,330 +1,58 @@
 import os
-import pickle
-import warnings
-
-import numpy as np
 import pandas as pd
-
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import OneHotEncoder
+import pickle
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-
-from sklearn.model_selection import (
-    train_test_split,
-    cross_val_score
-)
-
 from sklearn.linear_model import LinearRegression
 
-from sklearn.ensemble import (
-    RandomForestRegressor,
-    GradientBoostingRegressor
-)
+# 1. Load Data
+data_path = os.path.join('data', 'Housing.csv')
+if not os.path.exists(data_path):
+    raise FileNotFoundError(f"Could not find Housing.csv at {data_path}. Please place the Kaggle dataset there.")
 
-from xgboost import XGBRegressor
+df = pd.read_csv(data_path)
 
-from sklearn.metrics import (
-    mean_absolute_error,
-    mean_squared_error,
-    r2_score
-)
+# Kaggle Housing dataset typically contains: 
+# price, area, bedrooms, bathrooms, stories, mainroad, guestroom, basement, hotwaterheating, airconditioning, parking, prefarea, furnishingstatus
 
-warnings.filterwarnings("ignore")
+# 2. Preprocessing
+# Convert binary categorical columns to 0/1
+binary_cols = ['mainroad', 'guestroom', 'basement', 'hotwaterheating', 'airconditioning', 'prefarea']
+for col in binary_cols:
+    if col in df.columns:
+        df[col] = df[col].map({'yes': 1, 'no': 0})
 
-# ==================================================
-# LOAD DATASET
-# ==================================================
+# Handle furnishingstatus (One-Hot Encoding or Mapping)
+if 'furnishingstatus' in df.columns:
+    df = pd.get_dummies(df, columns=['furnishingstatus'], drop_first=True)
 
-df = pd.read_csv("data/housing.csv")
+# Separate features and target
+X = df.drop('price', axis=1)
+y = df['price']
 
-print("\nDataset Loaded Successfully")
-print("Shape:", df.shape)
+# Save feature names to ensure web app matches column order exactly
+feature_names = list(X.columns)
+with open('features.pkl', 'wb') as f:
+    pickle.dump(feature_names, f)
 
-# ==================================================
-# REMOVE OUTLIERS FROM PRICE
-# ==================================================
+# 3. Train/Test Split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-Q1 = df["price"].quantile(0.25)
-Q3 = df["price"].quantile(0.75)
+# 4. Feature Scaling
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
 
-IQR = Q3 - Q1
+# 5. Model Training
+model = LinearRegression()
+model.fit(X_train_scaled, y_train)
 
-lower = Q1 - 1.5 * IQR
-upper = Q3 + 1.5 * IQR
+print(# 6. Save Model and Scaler
+f"Model Training Complete. R^2 Score: {model.score(scaler.transform(X_test), y_test):.4f}")
 
-df = df[
-    (df["price"] >= lower) &
-    (df["price"] <= upper)
-]
+with open('model.pkl', 'wb') as f:
+    pickle.dump(model, f)
 
-print("\nShape After Outlier Removal:", df.shape)
+with open('scaler.pkl', 'wb') as f:
+    pickle.dump(scaler, f)
 
-# ==================================================
-# FEATURE ENGINEERING
-# ==================================================
-
-df["area_per_bedroom"] = (
-    df["area"] / df["bedrooms"]
-)
-
-df["total_rooms"] = (
-    df["bedrooms"] +
-    df["bathrooms"]
-)
-
-df["luxury_score"] = (
-    df["area"]
-    + df["bathrooms"] * 1000
-    + df["parking"] * 500
-)
-
-# ==================================================
-# FEATURES & TARGET
-# ==================================================
-
-X = df.drop("price", axis=1)
-
-# log transform target
-y = np.log1p(df["price"])
-
-# ==================================================
-# COLUMN TYPES
-# ==================================================
-
-categorical_features = [
-    "mainroad",
-    "guestroom",
-    "basement",
-    "hotwaterheating",
-    "airconditioning",
-    "prefarea",
-    "furnishingstatus"
-]
-
-numerical_features = [
-    "area",
-    "bedrooms",
-    "bathrooms",
-    "stories",
-    "parking",
-    "area_per_bedroom",
-    "total_rooms",
-    "luxury_score"
-]
-
-# ==================================================
-# PREPROCESSING
-# ==================================================
-
-numeric_transformer = Pipeline(
-    steps=[
-        (
-            "imputer",
-            SimpleImputer(strategy="median")
-        ),
-        (
-            "scaler",
-            StandardScaler()
-        )
-    ]
-)
-
-categorical_transformer = Pipeline(
-    steps=[
-        (
-            "imputer",
-            SimpleImputer(
-                strategy="most_frequent"
-            )
-        ),
-        (
-            "encoder",
-            OneHotEncoder(
-                handle_unknown="ignore"
-            )
-        )
-    ]
-)
-
-preprocessor = ColumnTransformer(
-    transformers=[
-        (
-            "num",
-            numeric_transformer,
-            numerical_features
-        ),
-        (
-            "cat",
-            categorical_transformer,
-            categorical_features
-        )
-    ]
-)
-
-# ==================================================
-# TRAIN TEST SPLIT
-# ==================================================
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X,
-    y,
-    test_size=0.20,
-    random_state=42
-)
-
-# ==================================================
-# MODELS
-# ==================================================
-
-models = {
-
-    "Linear Regression":
-
-        LinearRegression(),
-
-    "Random Forest":
-
-        RandomForestRegressor(
-            n_estimators=500,
-            max_depth=10,
-            min_samples_leaf=2,
-            random_state=42
-        ),
-
-    "Gradient Boosting":
-
-        GradientBoostingRegressor(
-            n_estimators=300,
-            learning_rate=0.05,
-            max_depth=4,
-            random_state=42
-        ),
-
-    "XGBoost":
-
-        XGBRegressor(
-            n_estimators=500,
-            learning_rate=0.05,
-            max_depth=4,
-            subsample=0.8,
-            colsample_bytree=0.8,
-            random_state=42
-        )
-}
-
-# ==================================================
-# TRAIN & EVALUATE
-# ==================================================
-
-best_model = None
-best_r2 = -999
-best_name = ""
-
-print("\n")
-print("=" * 60)
-print("MODEL COMPARISON")
-print("=" * 60)
-
-for name, model in models.items():
-
-    pipeline = Pipeline(
-        steps=[
-            (
-                "preprocessor",
-                preprocessor
-            ),
-            (
-                "model",
-                model
-            )
-        ]
-    )
-
-    pipeline.fit(
-        X_train,
-        y_train
-    )
-
-    predictions_log = pipeline.predict(X_test)
-
-    predictions = np.expm1(
-        predictions_log
-    )
-
-    actual = np.expm1(
-        y_test
-    )
-
-    mae = mean_absolute_error(
-        actual,
-        predictions
-    )
-
-    mse = mean_squared_error(
-        actual,
-        predictions
-    )
-
-    rmse = np.sqrt(mse)
-
-    r2 = r2_score(
-        actual,
-        predictions
-    )
-
-    cv_scores = cross_val_score(
-        pipeline,
-        X,
-        y,
-        cv=5,
-        scoring="r2"
-    )
-
-    cv_mean = cv_scores.mean()
-
-    print("\n")
-    print("=" * 60)
-    print(name)
-    print("=" * 60)
-
-    print("MAE :", round(mae, 2))
-    print("MSE :", round(mse, 2))
-    print("RMSE:", round(rmse, 2))
-    print("R²  :", round(r2, 4))
-    print("CV  :", round(cv_mean, 4))
-
-    if r2 > best_r2:
-        best_r2 = r2
-        best_model = pipeline
-        best_name = name
-
-# ==================================================
-# SAVE MODEL
-# ==================================================
-
-os.makedirs(
-    "model",
-    exist_ok=True
-)
-
-with open(
-    "model/model.pkl",
-    "wb"
-) as f:
-
-    pickle.dump(
-        best_model,
-        f
-    )
-
-print("\n")
-print("=" * 60)
-print("BEST MODEL")
-print("=" * 60)
-
-print("Model :", best_name)
-print("R²    :", round(best_r2, 4))
-
-print("\nModel saved successfully!")
+print("Saved model.pkl, scaler.pkl, and features.pkl successfully.")

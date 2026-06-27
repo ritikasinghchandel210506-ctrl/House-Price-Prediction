@@ -1,219 +1,60 @@
-from flask import Flask, render_template, request
-import pandas as pd
-import numpy as np
+import os
 import pickle
+import numpy as np
+import pandas as pd
+from flask import Flask, request, render_template
 
 app = Flask(__name__)
 
-# ==========================================
-# LOAD TRAINED MODEL
-# ==========================================
-
-with open("model/model.pkl", "rb") as f:
+# Load model, scaler, and feature structural layout
+with open('model.pkl', 'rb') as f:
     model = pickle.load(f)
 
-# ==========================================
-# HOME PAGE
-# ==========================================
+with open('scaler.pkl', 'rb') as f:
+    scaler = pickle.load(f)
 
-@app.route("/")
+with open('features.pkl', 'rb') as f:
+    model_features = pickle.load(f)
+
+@app.route('/')
 def home():
+    return render_template('index.html')
 
-    return render_template(
-        "index.html"
-    )
-
-# ==========================================
-# PREDICT
-# ==========================================
-
-@app.route("/predict", methods=["POST"])
+@app.route('/predict', methods=['POST'])
 def predict():
+    if request.method == 'POST':
+        # Extract raw data from form
+        form_data = {
+            'area': float(request.form['area']),
+            'bedrooms': int(request.form['bedrooms']),
+            'bathrooms': int(request.form['bathrooms']),
+            'stories': int(request.form['stories']),
+            'mainroad': int(request.form['mainroad']),
+            'guestroom': int(request.form['guestroom']),
+            'basement': int(request.form['basement']),
+            'hotwaterheating': int(request.form['hotwaterheating']),
+            'airconditioning': int(request.form['airconditioning']),
+            'parking': int(request.form['parking']),
+            'prefarea': int(request.form['prefarea']),
+        }
+        
+        # Handle dummy variables for furnishingstatus
+        furnishing = request.form['furnishingstatus']
+        form_data['furnishingstatus_semi-furnished'] = 1 if furnishing == 'semi-furnished' else 0
+        form_data['furnishingstatus_unfurnished'] = 1 if furnishing == 'unfurnished' else 0
 
-    try:
+        # Convert to DataFrame matching the exact structure of training features
+        input_df = pd.DataFrame([form_data])
+        input_df = input_df[model_features] # Ensure correct column order
+        
+        # Scale inputs
+        input_scaled = scaler.transform(input_df)
+        
+        # Predict
+        prediction = model.predict(input_scaled)[0]
+        formatted_prediction = f"₹{prediction:,.2f}" # Formatted format
 
-        # ----------------------------------
-        # GET FORM DATA
-        # ----------------------------------
+        return render_template('index.html', prediction_text=f'Estimated House Price: {formatted_prediction}')
 
-        area = float(
-            request.form["area"]
-        )
-
-        bedrooms = int(
-            request.form["bedrooms"]
-        )
-
-        bathrooms = int(
-            request.form["bathrooms"]
-        )
-
-        stories = int(
-            request.form["stories"]
-        )
-
-        parking = int(
-            request.form["parking"]
-        )
-
-        mainroad = request.form["mainroad"]
-
-        guestroom = request.form["guestroom"]
-
-        basement = request.form["basement"]
-
-        hotwaterheating = request.form[
-            "hotwaterheating"
-        ]
-
-        airconditioning = request.form[
-            "airconditioning"
-        ]
-
-        prefarea = request.form[
-            "prefarea"
-        ]
-
-        furnishingstatus = request.form[
-            "furnishingstatus"
-        ]
-
-        # ----------------------------------
-        # FEATURE ENGINEERING
-        # SAME AS train.py
-        # ----------------------------------
-
-        area_per_bedroom = (
-            area / bedrooms
-        )
-
-        total_rooms = (
-            bedrooms + bathrooms
-        )
-
-        luxury_score = (
-            area +
-            bathrooms * 1000 +
-            parking * 500
-        )
-
-        # ----------------------------------
-        # CREATE DATAFRAME
-        # ----------------------------------
-
-        input_df = pd.DataFrame({
-
-            "area":
-                [area],
-
-            "bedrooms":
-                [bedrooms],
-
-            "bathrooms":
-                [bathrooms],
-
-            "stories":
-                [stories],
-
-            "parking":
-                [parking],
-
-            "mainroad":
-                [mainroad],
-
-            "guestroom":
-                [guestroom],
-
-            "basement":
-                [basement],
-
-            "hotwaterheating":
-                [hotwaterheating],
-
-            "airconditioning":
-                [airconditioning],
-
-            "prefarea":
-                [prefarea],
-
-            "furnishingstatus":
-                [furnishingstatus],
-
-            "area_per_bedroom":
-                [area_per_bedroom],
-
-            "total_rooms":
-                [total_rooms],
-
-            "luxury_score":
-                [luxury_score]
-        })
-
-        # ----------------------------------
-        # PREDICT
-        # ----------------------------------
-
-        prediction_log = model.predict(
-            input_df
-        )[0]
-
-        prediction = np.expm1(
-            prediction_log
-        )
-
-        prediction = round(
-            prediction
-        )
-
-        # ----------------------------------
-        # RETURN RESULT
-        # ----------------------------------
-
-        return render_template(
-
-            "index.html",
-
-            prediction_text=
-            f"₹ {prediction:,.0f}",
-
-            area=area,
-            bedrooms=bedrooms,
-            bathrooms=bathrooms,
-            stories=stories,
-            parking=parking,
-
-            mainroad=mainroad,
-            guestroom=guestroom,
-            basement=basement,
-
-            hotwaterheating=
-            hotwaterheating,
-
-            airconditioning=
-            airconditioning,
-
-            prefarea=prefarea,
-
-            furnishingstatus=
-            furnishingstatus
-        )
-
-    except Exception as e:
-
-        return render_template(
-
-            "index.html",
-
-            error=
-            f"Error: {str(e)}"
-        )
-
-# ==========================================
-# RUN APP
-# ==========================================
-
-if __name__ == "__main__":
-
-    app.run(
-        debug=True
-    )
+if __name__ == '__main__':
+    app.run(debug=True)

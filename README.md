@@ -1,168 +1,26 @@
-# House Price Prediction Web Application
+# House Price Prediction App
 
-## Project Overview
+A full-stack Machine Learning web application built using Python, Flask, and Scikit-Learn. The system trains a Predictive Linear Regression model using the Kaggle Housing Dataset to forecast residential real estate pricing based on core features (structural area, rooms, furnishing configuration, and utilities).
 
-This project is an end-to-end Machine Learning web application that predicts house prices based on user-provided features.
-
-Users enter:
-
-- Area (sq ft)
-- Bedrooms
-- Bathrooms
-- Floors
-- Parking Spaces
-
-The application uses a trained Machine Learning model to estimate the house price.
+## 🚀 System Architecture & Pipeline
+1. **Data Layer (`data/`):** Houses the raw `Housing.csv` records.
+2. **Training Engine (`train.py`):** - Handles cleaning and binary encoding of categorical variants.
+   - Applies dummy structural mappings to tracking components like `furnishingstatus`.
+   - Scales numerical weights using `StandardScaler`.
+   - Exports compressed asset states via serialization (`model.pkl`, `scaler.pkl`, `features.pkl`).
+3. **Web Infrastructure (`app.py`):** Runs a localized Flask environment rendering a clean frontend dashboard UI to serve inferences dynamically.
 
 ---
 
-## Features
-
-- Data preprocessing
-- Missing value handling
-- Model training
-- Model comparison
-- Flask backend
-- Responsive Bootstrap UI
-- Real-time house price prediction
-- Deployment ready
-
----
-
-## Tech Stack
-
-### Machine Learning
-
-- Python
-- Pandas
-- NumPy
-- Scikit-learn
-
-### Backend
-
-- Flask
-
-### Frontend
-
-- HTML
-- CSS
-- Bootstrap
-
-### Version Control
-
-- Git
-- GitHub
-
-### Deployment
-
-- Render
-
----
-
-## Project Structure
+## 🛠️ Project Structure
 
 ```text
-House-Price-Prediction/
-
 ├── data/
-│   └── housing.csv
-
-├── model/
-│   └── model.pkl
-
+│   └── Housing.csv         # Kaggle Dataset
 ├── static/
-│   └── style.css
-
+│   └── style.css           # Custom UI Styling
 ├── templates/
-│   └── index.html
-
-├── train.py
-├── app.py
-├── requirements.txt
-├── README.md
-```
-
-## Installation
-
-Clone repository
-
-```bash
-git clone <repository-url>
-```
-
-Move into project folder
-
-```bash
-cd House-Price-Prediction
-```
-
-Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-Train model
-
-```bash
-python train.py
-```
-
-Run application
-
-```bash
-python app.py
-```
-
-Open browser
-
-```text
-http://127.0.0.1:5000
-```
-
----
-
-## Usage
-
-1. Enter house details.
-2. Click Predict Price.
-3. View estimated house price.
-
----
-
-## Model Evaluation Metrics
-
-- MAE
-- MSE
-- RMSE
-- R² Score
-
----
-
-## Screenshots
-
-### Home Page
-
-(Add Screenshot)
-
-### Prediction Result
-
-(Add Screenshot)
-
----
-
-## Future Improvements
-
-- XGBoost Model
-- Feature Engineering
-- User Authentication
-- Database Integration
-- Prediction History
-- Interactive Charts
-- Cloud Deployment
-
----
-
-## Author
-
-Your Name
+│   └── index.html          # Dynamic Web Input Form
+├── app.py                  # Flask Application Server
+├── train.py                # ML Model Training Pipeline
+└── requirements.txt        # Production Dependencies
