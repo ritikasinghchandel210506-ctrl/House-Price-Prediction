@@ -10,12 +10,10 @@
     <div class="container">
         <h2>House Price Prediction Panel</h2>
         <form action="/predict" method="POST">
-            
             <div class="form-group">
                 <label for="area">Total Area (sq ft):</label>
                 <input type="number" id="area" name="area" required placeholder="e.g. 4000">
             </div>
-
             <div class="form-row">
                 <div class="form-group">
                     <label for="bedrooms">Bedrooms:</label>
@@ -30,12 +28,10 @@
                     <input type="number" id="stories" name="stories" min="1" max="5" required placeholder="2">
                 </div>
             </div>
-
             <div class="form-group">
                 <label for="parking">Parking Spaces:</label>
                 <input type="number" id="parking" name="parking" min="0" max="4" required placeholder="1">
             </div>
-
             <div class="form-group">
                 <label for="furnishingstatus">Furnishing Status:</label>
                 <select id="furnishingstatus" name="furnishingstatus" required>
@@ -44,7 +40,6 @@
                     <option value="unfurnished">Unfurnished</option>
                 </select>
             </div>
-
             <h3 class="section-title">Amenities & Details</h3>
             <div class="grid-checkboxes">
                 <div class="checkbox-item">
@@ -78,17 +73,12 @@
                     <label for="prefarea">Preferred Area</label>
                 </div>
             </div>
-
             <button type="submit" class="btn">Calculate Price Estimate</button>
         </form>
-
         {% if prediction_text %}
-            <div class="result-box">
-                <h3>{{ prediction_text }}</h3>
-            </div>
+            <div class="result-box"><h3>{{ prediction_text }}</h3></div>
         {% endif %}
     </div>
-
     <script>
         // JavaScript workaround to handle unchecked checkboxes transmitting 0 cleanly to Flask
         document.querySelector('form').addEventListener('submit', function() {
